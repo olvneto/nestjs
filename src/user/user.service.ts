@@ -1,49 +1,50 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
-import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
+import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
 import { UserEntity } from './entity/user.entity';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    private usersRepository: Repository<UserEntity>,
   ) {}
 
   async create(data: CreateUserDTO) {
     if (
-      await this.userRepository.exists({
-        where: { email: data.email },
+      await this.usersRepository.exists({
+        where: {
+          email: data.email,
+        },
       })
     ) {
-      throw new BadRequestException('Este e-mail já está sendo utilizado.');
+      throw new BadRequestException('Este e-mail já está sendo usado.');
     }
-
     const salt = await bcrypt.genSalt();
 
     data.password = await bcrypt.hash(data.password, salt);
 
-    const user = this.userRepository.create(data);
+    const user = this.usersRepository.create(data);
 
-    return this.userRepository.save(user);
+    return this.usersRepository.save(user);
   }
 
   async list() {
-    return this.userRepository.find();
+    return this.usersRepository.find();
   }
 
   async show(id: number) {
-    await this.isExists(id);
+    await this.exists(id);
 
-    return this.userRepository.findOneBy({
+    return this.usersRepository.findOneBy({
       id,
     });
   }
@@ -52,12 +53,13 @@ export class UserService {
     id: number,
     { email, name, password, birthAt, role }: UpdatePutUserDTO,
   ) {
-    await this.isExists(id);
+    await this.exists(id);
+
     const salt = await bcrypt.genSalt();
 
     password = await bcrypt.hash(password, salt);
 
-    await this.userRepository.update(id, {
+    await this.usersRepository.update(id, {
       email,
       name,
       password,
@@ -72,7 +74,7 @@ export class UserService {
     id: number,
     { email, name, password, birthAt, role }: UpdatePatchUserDTO,
   ) {
-    await this.isExists(id);
+    await this.exists(id);
 
     const data: any = {};
 
@@ -90,7 +92,6 @@ export class UserService {
 
     if (password) {
       const salt = await bcrypt.genSalt();
-
       data.password = await bcrypt.hash(password, salt);
     }
 
@@ -98,24 +99,28 @@ export class UserService {
       data.role = role;
     }
 
-    await this.userRepository.update(id, data);
+    await this.usersRepository.update(id, data);
 
     return this.show(id);
   }
 
   async delete(id: number) {
-    await this.isExists(id);
+    await this.exists(id);
 
-    return this.userRepository.delete(id);
+    await this.usersRepository.delete(id);
+
+    return true;
   }
 
-  async isExists(id: number) {
+  async exists(id: number) {
     if (
-      !(await this.userRepository.exists({
-        where: { id },
+      !(await this.usersRepository.exists({
+        where: {
+          id,
+        },
       }))
     ) {
-      throw new NotFoundException(`O usuário com id ${id} não existe.`);
+      throw new NotFoundException(`O usuário ${id} não existe.`);
     }
   }
 }
