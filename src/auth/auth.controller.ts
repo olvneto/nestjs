@@ -40,6 +40,7 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() body: AuthRegisterDTO) {
+    delete body.role;
     return this.authService.register(body);
   }
 
