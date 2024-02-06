@@ -111,7 +111,7 @@ export class AuthService {
       },
     });
 
-    return true;
+    return { success: true };
   }
 
   async reset(password: string, token: string) {
@@ -122,7 +122,7 @@ export class AuthService {
       });
 
       if (isNaN(Number(data.id))) {
-        throw new BadRequestException('O token é inválido.');
+        throw new BadRequestException('Token é inválido.');
       }
 
       const salt = await bcrypt.genSalt();
@@ -141,7 +141,10 @@ export class AuthService {
   }
 
   async register(data: AuthRegisterDTO) {
+    delete data.role;
+
     const user = await this.userService.create(data);
+
     return this.createToken(user);
   }
 }

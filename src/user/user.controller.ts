@@ -13,15 +13,15 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { UserService } from './user.service';
-import { LogInterceptor } from 'src/interceptors/log.interceptors';
-import { ParamId } from 'src/decorators/param-id.decorator';
-import { Roles } from 'src/decorators/roles.decorator';
-import { Role } from 'src/enums/role.enum';
-import { RoleGuard } from 'src/guards/role.guard';
-import { AuthGuard } from 'src/guards/auth.guards';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Role } from '../enums/role.enum';
+import { AuthGuard } from '../guards/auth.guards';
+import { RoleGuard } from '../guards/role.guard';
+import { LogInterceptor } from '../interceptors/log.interceptors';
+import { ParamId } from '../decorators/param-id.decorator';
+import { Roles } from '../decorators/roles.decorator';
 
-@Roles(Role.admin)
+@Roles(Role.Admin)
 @UseGuards(AuthGuard, RoleGuard)
 @UseInterceptors(LogInterceptor)
 @Controller('users')
@@ -56,6 +56,6 @@ export class UserController {
 
   @Delete(':id')
   async delete(@ParamId() id: number) {
-    return this.userService.delete(id);
+    return { success: await this.userService.delete(id) };
   }
 }
