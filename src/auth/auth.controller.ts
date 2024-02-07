@@ -57,7 +57,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('me')
-  async me(@User('email') user: UserEntity) {
+  async me(@User() user: UserEntity) {
     return user;
   }
 

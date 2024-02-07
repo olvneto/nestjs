@@ -85,12 +85,10 @@ describe('AppController (e2e)', () => {
       .post('/auth/me')
       .set('Authorization', `bearer ${accessToken}`)
       .send();
-
+    userId = response.body.id;
     expect(response.statusCode).toEqual(201);
     expect(typeof response.body.id).toEqual('number');
     expect(response.body.role).toEqual(Role.User);
-
-    userId = response.body.id;
   });
 
   it('Tentar ver a lista de todos os usuários', async () => {
